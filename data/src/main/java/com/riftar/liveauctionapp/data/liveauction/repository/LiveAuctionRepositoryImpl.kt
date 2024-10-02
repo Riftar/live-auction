@@ -5,7 +5,6 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
-import com.google.gson.Gson
 import com.riftar.liveauctionapp.domain.liveauction.model.AuctionItem
 import com.riftar.liveauctionapp.domain.liveauction.model.Bid
 import com.riftar.liveauctionapp.domain.liveauction.repository.LiveAuctionRepository
@@ -24,45 +23,15 @@ class LiveAuctionRepositoryImpl @Inject constructor(
         val itemsRef = database.getReference("items")
         val listener = itemsRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-
-                val value = snapshot.value
-//                // Assuming you have the JSON string
-//                val gson = Gson()
-//
-//                // Accessing specific item by key:
-//                val item1Data = gson.fromJson(value.toString(), AuctionItem::class.java)
-//
-//                // Accessing all items (requires further processing):
-//                val itemsMap =
-//                    gson.fromJson(value.toString(), Map::class.java) as Map<String, Map<String, Any>>
-//                val allItems = itemsMap["items"] as Map<String, Any>
-//                // You can then iterate through the "allItems" map to access individual items
-//
-//                Log.d("Rifqi-test", "Snapshot is: ${snapshot.value}")
-//                Log.d("Rifqi-test", "Value is: $value")
-//                Log.d("Rifqi-test", "Wrap is: $allItems")
-//                Log.d("Rifqi-test", "Item 1 is: $item1Data")
-
-
                 val allItems2 = mutableListOf<AuctionItem>()
-
+                Log.d("Rifqi-test", "Children is: ${snapshot.children}")
                 for (child in snapshot.children) {
-                    val itemMap = child.value as Map<String, Any>
-                    val auctionItem = AuctionItem(
-                        itemMap["id"] as String,
-                        itemMap["name"] as String,
-                        itemMap["description"] as String,
-                        itemMap["imageUrl"] as String,
-                        // check how to save double on firebase
-                        (itemMap["basePrice"] as Long).toInt(), // Assuming price is a double
-                        (itemMap["currentPrice"] as Long).toInt(),
-                        itemMap["currentBidder"] as String,
-                        (itemMap["timeRemaining"] as Long).toInt() // Convert timeRemaining to Int
-                    )
-                    allItems2.add(auctionItem)
+                    //todo create dedicated AuctionItemResponse class that accept null
+                    val auctionItem = child.getValue(AuctionItem::class.java)
+                    if (auctionItem != null) {
+                        allItems2.add(auctionItem)
+                    }
                 }
-
-
                 Log.d("Rifqi-test", "Wrap is: $allItems2")
                 val items = snapshot.children.mapNotNull { it.getValue(AuctionItem::class.java) }
 
@@ -76,47 +45,22 @@ class LiveAuctionRepositoryImpl @Inject constructor(
         awaitClose { itemsRef.removeEventListener(listener) }
     }
 
-    override suspend fun placeBid(itemId: String, bid: Bid): Result<Unit> {
-//        return withContext(Dispatchers.IO) {
-//            try {
-//                val itemRef = database.getReference("items").child(itemId)
-//                val bidRef = database.getReference("bids").child(itemId).push()
-//
-//                val transactionResult = database.reference.runTransaction(object : Transaction.Handler {
-//                    override fun doTransaction(mutableData: MutableData): Transaction.Result {
-//                        val item = mutableData.child("items").child(itemId).getValue(AuctionItem::class.java)
-//                        if (item != null && bid.amount > item.currentPrice) {
-//                            mutableData.child("items").child(itemId).child("currentPrice").value = bid.amount
-//                            mutableData.child("items").child(itemId).child("currentBidder").value = bid.userId
-//                            mutableData.child("bids").child(itemId).child(bidRef.key!!).value = mapOf(
-//                                "userId" to bid.userId,
-//                                "amount" to bid.amount,
-//                                "timestamp" to ServerValue.TIMESTAMP
-//                            )
-//                            return Transaction.success(mutableData)
-//                        }
-//                        return Transaction.abort()
-//                    }
-//
-//                    override fun onComplete(
-//                        error: DatabaseError?,
-//                        committed: Boolean,
-//                        currentData: DataSnapshot?
-//                    ) {
-//                        // This method is called even if the transaction was aborted,
-//                        // so we don't need to do anything here.
-//                    }
-//                })
-//
-//                if (transactionResult.isSuccessful) {
-//                    Result.success(Unit)
-//                } else {
-//                    Result.failure(Exception("Bid not placed: Transaction failed or was aborted"))
-//                }
-//            } catch (e: Exception) {
-//                Result.failure(e)
-//            }
-//        }
-        return Result.success(Unit)
+    override suspend fun placeBid(itemId: String, bid: Bid) {
+        val itemRef = database.getReference("items").child(itemId)
+        val bidRef = database.getReference("bids")
+
+        Log.d("Rifqi-test", "placeBid: Item ${itemRef.child("name")}")
+
+        itemRef.child("currentPrice").setValue(bid.amount)
+        itemRef.child("currentBidder").setValue(bid.userId)
+
+        val bidId = System.currentTimeMillis().toString()
+        bidRef.child(bidId).setValue(
+            mapOf(
+                "userId" to bid.userId,
+                "amount" to bid.amount,
+                "timestamp" to System.currentTimeMillis()
+            )
+        )
     }
 }

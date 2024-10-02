@@ -28,11 +28,10 @@ class LiveAuctionViewModel @Inject constructor(private val repository: LiveAucti
         }
     }
 
-    fun placeBid(userId: String) {
-        val currentItem = _auctionItem.value ?: return
+    fun placeBid(userId: String, currentItem: AuctionItem) {
         viewModelScope.launch {
-            val bid = Bid(userId, currentItem.currentPrice.toDouble() + 5)
-            repository.placeBid(currentItem.id, bid)
+            val bid = Bid(userId, (currentItem.currentPrice?.toDouble() ?: 0.0) + 5)
+            repository.placeBid(currentItem.id.orEmpty(), bid)
         }
     }
 }

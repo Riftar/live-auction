@@ -59,6 +59,7 @@ import androidx.core.graphics.toColorInt
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.riftar.liveauctionapp.domain.liveauction.model.AuctionItem
 import com.riftar.liveauctionapp.liveauction.ui.theme.LiveAuctionAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlin.random.Random
@@ -179,8 +180,10 @@ fun HomeScreen(modifier: Modifier = Modifier) {
         )
 
         if (showSheet) {
-            BottomSheet {
-                showSheet = false
+            currentItem?.let {
+                BottomSheet(viewModel, it) {
+                    showSheet = false
+                }
             }
         }
 
@@ -303,7 +306,7 @@ fun CommentCard(comment: Comment) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomSheet(onDismiss: () -> Unit) {
+fun BottomSheet(viewModel: LiveAuctionViewModel, item: AuctionItem, onDismiss: () -> Unit) {
     val modalBottomSheetState = rememberModalBottomSheetState()
 
     ModalBottomSheet(
@@ -311,26 +314,25 @@ fun BottomSheet(onDismiss: () -> Unit) {
         sheetState = modalBottomSheetState,
         dragHandle = { BottomSheetDefaults.DragHandle() },
     ) {
-        BidSection()
+        BidSection(viewModel, item)
     }
 }
 
 @Composable
-fun BidSection() {
+fun BidSection(viewModel: LiveAuctionViewModel, item: AuctionItem) {
     Column(modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp)) {
-        val item = listItem.random()
-        ItemDetail(item)
+        ItemDetail(viewModel, item)
     }
 }
 
 @Composable
-fun ItemDetail(item: ItemDetail) {
+fun ItemDetail(viewModel: LiveAuctionViewModel, item: AuctionItem) {
     Row(
         modifier = Modifier.padding(all = 8.dp),
         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
     ) {
-        Image(
-            painter = painterResource(item.photo),
+        AsyncImage(
+           model = item.imageUrl,
             contentDescription = "avatar",
             modifier = Modifier
                 .size(84.dp)
@@ -406,7 +408,7 @@ fun ItemDetail(item: ItemDetail) {
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "RM 25",
+                    text = "RM ${item.currentPrice}",
                     style = MaterialTheme.typography.titleMedium.copy(
                         color = Color.White,
                         fontWeight = FontWeight.Medium
@@ -439,12 +441,12 @@ fun ItemDetail(item: ItemDetail) {
         }
     }
     Button(
-        onClick = { /*TODO*/ },
+        onClick = { viewModel.placeBid("user1", item) },
         modifier = Modifier.fillMaxWidth(),
         colors = ButtonDefaults.buttonColors(containerColor = Color("#C2FF61".toColorInt()))
     ) {
         Text(
-            text = "Bid",
+            text = "Bid RM ${item.currentPrice + 5}",
             style = MaterialTheme.typography.bodyLarge.copy(
                 color = Color.DarkGray,
                 fontWeight = FontWeight.Bold
