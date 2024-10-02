@@ -1,9 +1,40 @@
 package com.riftar.liveauctionapp.liveauction
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.riftar.liveauctionapp.domain.liveauction.model.AuctionItem
+import com.riftar.liveauctionapp.domain.liveauction.model.Bid
+import com.riftar.liveauctionapp.domain.liveauction.repository.LiveAuctionRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class LiveAuctionViewModel : ViewModel() {
+@HiltViewModel
+class LiveAuctionViewModel @Inject constructor(private val repository: LiveAuctionRepository) : ViewModel() {
+    private val _auctionItem = MutableStateFlow<AuctionItem?>(null)
+    val auctionItem: StateFlow<AuctionItem?> = _auctionItem
 
+    init {
+        startAuction("item1")
+    }
+
+    fun startAuction(itemId: String) {
+        viewModelScope.launch {
+            repository.getAuctionItemFlow().collect {
+                _auctionItem.value = it.first()
+            }
+        }
+    }
+
+    fun placeBid(userId: String) {
+        val currentItem = _auctionItem.value ?: return
+        viewModelScope.launch {
+            val bid = Bid(userId, currentItem.currentPrice.toDouble() + 5)
+            repository.placeBid(currentItem.id, bid)
+        }
+    }
 }
 
 

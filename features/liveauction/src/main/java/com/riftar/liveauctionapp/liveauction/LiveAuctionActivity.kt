@@ -37,6 +37,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -55,10 +56,13 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.core.graphics.toColorInt
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.riftar.liveauctionapp.liveauction.ui.theme.LiveAuctionAppTheme
+import dagger.hilt.android.AndroidEntryPoint
 import kotlin.random.Random
-
+@AndroidEntryPoint
 class LiveAuctionActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,7 +81,8 @@ class LiveAuctionActivity : ComponentActivity() {
 
 @Composable
 fun HomeScreen(modifier: Modifier = Modifier) {
-//    val viewModel: LiveAuctionViewModel = viewModel()
+    val viewModel: LiveAuctionViewModel = hiltViewModel()
+    val currentItem by viewModel.auctionItem.collectAsState()
     var showSheet by rememberSaveable { mutableStateOf(false) }
     val stream = StreamModel(
         avatarUrl = "https://picsum.photos/id/${
@@ -162,7 +167,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                     style = MaterialTheme.typography.bodySmall.copy(color = Color.White),
                 )
                 Text(
-                    text = stream.streamTitle,
+                    text = currentItem.toString(),
                     style = MaterialTheme.typography.titleMedium.copy(color = Color.White),
                 )
             }

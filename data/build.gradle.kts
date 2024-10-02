@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.jetbrains.kotlin.android)
     alias(libs.plugins.ksp)
+    id("kotlin-kapt")
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -41,6 +43,8 @@ dependencies {
     api(libs.koin)
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.junit.ktx)
+    api(libs.firebase.database.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
     ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.paging)
     implementation(libs.paging.runtime)
@@ -52,4 +56,13 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    implementation(libs.hilt.android)
+    kapt(libs.hilt.android.compiler)
+}
+
+
+// Allow references to generated code
+kapt {
+    correctErrorTypes = true
 }
