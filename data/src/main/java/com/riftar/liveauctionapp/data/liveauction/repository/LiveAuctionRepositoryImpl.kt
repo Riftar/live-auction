@@ -45,15 +45,34 @@ class LiveAuctionRepositoryImpl @Inject constructor(
         awaitClose { itemsRef.removeEventListener(listener) }
     }
 
+
+    // in an ideal system, the timer should be retrieve from backend
+    override fun getTimeRemaining(): Flow<Int> = callbackFlow {
+        val timeRemainingRef = database.getReference("timeRemaining")
+        val listener = timeRemainingRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                trySend(snapshot.getValue(Int::class.java) ?: 0)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                close(error.toException())
+            }
+        })
+        awaitClose { timeRemainingRef.removeEventListener(listener) }
+    }
+
     override suspend fun placeBid(itemId: String, bid: Bid) {
         val itemRef = database.getReference("items").child(itemId)
         val bidRef = database.getReference("bids")
 
-        Log.d("Rifqi-test", "placeBid: Item ${itemRef.child("name")}")
+        // reset time remaining
+        database.getReference("timeRemaining").setValue(10)
 
+        // save bid data to item
         itemRef.child("currentPrice").setValue(bid.amount)
         itemRef.child("currentBidder").setValue(bid.userName)
 
+        // save bid data as history
         val bidId = System.currentTimeMillis().toString()
         bidRef.child(itemId).child(bidId).setValue(
             mapOf(

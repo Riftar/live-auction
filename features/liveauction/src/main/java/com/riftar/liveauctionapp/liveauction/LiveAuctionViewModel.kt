@@ -108,15 +108,25 @@ class LiveAuctionViewModel @Inject constructor(private val repository: LiveAucti
     )
     private val _auctionItem = MutableStateFlow<AuctionItem?>(null)
     val auctionItem: StateFlow<AuctionItem?> = _auctionItem
+    private val _timeRemaining = MutableStateFlow(10)
+    val timeRemaining: StateFlow<Int> = _timeRemaining
     private val _itemIndex = MutableStateFlow(0)
     val itemIndex: StateFlow<Int> = _itemIndex
 
-    fun startAuction() {
+    fun getAuctionItem() {
         viewModelScope.launch {
             combine(_itemIndex, repository.getAuctionItemFlow()) { index, auctionItems ->
                 auctionItems[index]
             }.collect { auctionItem ->
                 _auctionItem.value = auctionItem
+            }
+        }
+    }
+
+    fun getTimeRemaining() {
+        viewModelScope.launch {
+            repository.getTimeRemaining().collect { time ->
+                _timeRemaining.value = time
             }
         }
     }

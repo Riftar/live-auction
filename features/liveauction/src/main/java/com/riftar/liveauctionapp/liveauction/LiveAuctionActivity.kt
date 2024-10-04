@@ -48,6 +48,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -93,17 +94,19 @@ class LiveAuctionActivity : ComponentActivity() {
 fun HomeScreen(modifier: Modifier = Modifier) {
     val viewModel: LiveAuctionViewModel = hiltViewModel()
     val currentItem by viewModel.auctionItem.collectAsState()
+    val timeRemaining by viewModel.timeRemaining.collectAsState()
     val stream by viewModel.stream.collectAsState()
     val listComment by viewModel.listComment.collectAsState()
     val listBid by viewModel.listBid.collectAsState()
     var showSheet by rememberSaveable { mutableStateOf(false) }
     val shouldShowDialog = rememberSaveable { mutableStateOf(false) }
     val deviceManufacturer = android.os.Build.MANUFACTURER
-    var startingCountDownTimer by rememberSaveable { mutableIntStateOf(5) }
+    var startingCountDownTimer by rememberSaveable { mutableIntStateOf(10) }
     val constraint = itemStreamConstraints()
 
     LaunchedEffect(Unit) {
-        viewModel.startAuction()
+        viewModel.getAuctionItem()
+        viewModel.getTimeRemaining()
     }
     LaunchedEffect(key1 = startingCountDownTimer) {
         while (startingCountDownTimer > 0) {
@@ -131,7 +134,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                 .layoutId("viewCount")
                 .background(color = Color.LightGray, shape = RoundedCornerShape(16.dp))
                 .padding(2.dp),
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
                 Icons.Rounded.Visibility, contentDescription = "eye icon", modifier = Modifier
@@ -166,7 +169,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                 .padding(8.dp)
                 .layoutId("userInfo")
                 .padding(4.dp),
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically
         ) {
             AsyncImage(
                 modifier = Modifier
@@ -201,7 +204,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
 
         if (showSheet) {
             currentItem?.let {
-                BottomSheet(listBid, it,
+                BottomSheet(listBid, it, timeRemaining,
                     onTimeUp = {
                         shouldShowDialog.value = true
                     },
@@ -237,7 +240,7 @@ fun StarterText(modifier: Modifier, startingCountDownTimer: Int) {
                     shape = RoundedCornerShape(16.dp)
                 )
                 .padding(16.dp),
-            horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = "Starting In",
@@ -295,7 +298,7 @@ fun CommentSection(modifier: Modifier, listComment: MutableList<Comment>) {
 fun CommentCard(comment: Comment) {
     Row(
         modifier = Modifier.padding(all = 8.dp),
-        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
             painter = painterResource(comment.avatar),
@@ -327,6 +330,7 @@ fun CommentCard(comment: Comment) {
 fun BottomSheet(
     listBid: List<BidDetail>,
     item: AuctionItem,
+    timeRemaining: Int,
     onDismiss: () -> Unit,
     onTimeUp: () -> Unit,
     onBidPlaced: (Int) -> Unit
@@ -339,7 +343,7 @@ fun BottomSheet(
         dragHandle = { BottomSheetDefaults.DragHandle() },
     ) {
         Column(modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp)) {
-            ItemDetail(listBid, item,
+            ItemDetail(listBid, item, timeRemaining,
                 onTimeUp = {
                     onTimeUp.invoke()
                 },
@@ -354,10 +358,14 @@ fun BottomSheet(
 fun ItemDetail(
     listBid: List<BidDetail>,
     item: AuctionItem,
+    timeRemaining: Int,
     onTimeUp: () -> Unit,
     onBidPlaced: (Int) -> Unit
 ) {
-    var timeLeft by rememberSaveable { mutableIntStateOf(10) }
+    var timeLeft by rememberSaveable { mutableStateOf(timeRemaining) }
+    LaunchedEffect(item) {
+        timeLeft = timeRemaining
+    }
     LaunchedEffect(key1 = timeLeft) {
         while (timeLeft > 0) {
             delay(1000L)
@@ -370,7 +378,7 @@ fun ItemDetail(
 
     Row(
         modifier = Modifier.padding(all = 8.dp),
-        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
             model = item.imageUrl,
@@ -405,7 +413,7 @@ fun ItemDetail(
         modifier = Modifier
             .padding(all = 8.dp)
             .height(80.dp),
-        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically
     ) {
         LazyColumn(modifier = Modifier.weight(1f)) {
             items(listBid.size) {
@@ -418,7 +426,7 @@ fun ItemDetail(
         ) {
             Column(
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = "Highest Bid",
@@ -441,7 +449,7 @@ fun ItemDetail(
         ) {
             Column(
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = "Ending in",
@@ -460,7 +468,6 @@ fun ItemDetail(
     }
     Button(
         onClick = {
-            timeLeft = 10
             onBidPlaced.invoke(item.currentPrice + 5)
         },
         modifier = Modifier.fillMaxWidth(),
@@ -480,7 +487,7 @@ fun ItemDetail(
 fun ItemBidding(bid: BidDetail) {
     Row(
         modifier = Modifier.padding(all = 8.dp),
-        verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
             painter = painterResource(bid.avatar),
@@ -516,6 +523,7 @@ private fun itemStreamConstraints() = ConstraintSet {
     }
     constrain(starterText) {
         top.linkTo(userInfo.bottom)
+        bottom.linkTo(commentSection.top)
         start.linkTo(parent.start)
         end.linkTo(parent.end)
     }
