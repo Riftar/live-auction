@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "109493088849",
+    "firebase_url": "https://live-auction-app-d5431-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "live-auction-app-d5431",
+    "storage_bucket": "live-auction-app-d5431.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:109493088849:android:f929321cfdbfb3bbd4be70",
+        "android_client_info": {
+          "package_name": "com.riftar.liveauctionapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCmdHfV9x2V8MKcRmDI27l2aT8UuWt6Plo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
