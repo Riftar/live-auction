@@ -1,12 +1,13 @@
 package com.riftar.liveauctionapp.liveauction
 
 import android.os.Bundle
+import android.view.KeyEvent
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,8 +19,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.outlined.Storefront
@@ -48,18 +52,22 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.layoutId
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -69,6 +77,8 @@ import androidx.core.graphics.toColorInt
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.riftar.liveauctionapp.domain.liveauction.model.AuctionItem
+import com.riftar.liveauctionapp.domain.liveauction.model.BidDetail
+import com.riftar.liveauctionapp.domain.liveauction.model.LiveComment
 import com.riftar.liveauctionapp.liveauction.ui.theme.LiveAuctionAppTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
@@ -97,9 +107,9 @@ fun HomeScreen(modifier: Modifier = Modifier) {
     val timeRemaining by viewModel.timeRemaining.collectAsState()
     val stream by viewModel.stream.collectAsState()
     val listComment by viewModel.listComment.collectAsState()
-    val listBid by viewModel.listBid.collectAsState()
-    var showSheet by rememberSaveable { mutableStateOf(false) }
-    val shouldShowDialog = rememberSaveable { mutableStateOf(false) }
+    val bidHistory by viewModel.bidHistory.collectAsState()
+    var showItemAuctionSheet by rememberSaveable { mutableStateOf(false) }
+    val showEndAuctionDialog = rememberSaveable { mutableStateOf(false) }
     val deviceManufacturer = android.os.Build.MANUFACTURER
     var startingCountDownTimer by rememberSaveable { mutableIntStateOf(10) }
     val constraint = itemStreamConstraints()
@@ -107,6 +117,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
     LaunchedEffect(Unit) {
         viewModel.getAuctionItem()
         viewModel.getTimeRemaining()
+        viewModel.getListComment()
     }
     LaunchedEffect(key1 = startingCountDownTimer) {
         while (startingCountDownTimer > 0) {
@@ -114,7 +125,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
             startingCountDownTimer--
         }
         if (startingCountDownTimer == 0) {
-            showSheet = true
+            showItemAuctionSheet = true
         }
     }
 
@@ -199,14 +210,18 @@ fun HomeScreen(modifier: Modifier = Modifier) {
             modifier = Modifier
                 .padding(vertical = 8.dp, horizontal = 16.dp)
                 .layoutId("commentSection"),
-            listComment
+            listComment,
+            onSendComment = { comment ->
+                viewModel.sendComment(deviceManufacturer, comment)
+            }
         )
 
-        if (showSheet) {
+        if (showItemAuctionSheet) {
             currentItem?.let {
-                BottomSheet(listBid, it, timeRemaining,
+                viewModel.getBidHistory(it.id)
+                BottomSheet(bidHistory, it, timeRemaining,
                     onTimeUp = {
-                        shouldShowDialog.value = true
+                        showEndAuctionDialog.value = true
                     },
                     onBidPlaced = {
                         currentItem?.let { item ->
@@ -214,16 +229,16 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                         }
                     },
                     onDismiss = {
-                        showSheet = false
+                        showItemAuctionSheet = false
                     })
             }
         }
 
-        EndAuctionDialog(shouldShowDialog,
+        EndAuctionDialog(showEndAuctionDialog,
             onDismiss = {
-                shouldShowDialog.value = false
+                showEndAuctionDialog.value = false
                 viewModel.goToNextItem()
-                showSheet = false
+                showItemAuctionSheet = false
                 startingCountDownTimer = 5
             }
         )
@@ -256,12 +271,19 @@ fun StarterText(modifier: Modifier, startingCountDownTimer: Int) {
 }
 
 @Composable
-fun CommentSection(modifier: Modifier, listComment: MutableList<Comment>) {
+fun CommentSection(
+    modifier: Modifier,
+    listComment: List<LiveComment>,
+    onSendComment: (String) -> Unit
+) {
     var comment by rememberSaveable { mutableStateOf("") }
 
     Column(modifier = modifier) {
         Box(modifier = Modifier.height(300.dp)) {
-            LazyColumn() {
+            LazyColumn(
+                modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.Bottom,
+            ) {
                 items(listComment.size) {
                     CommentCard(comment = listComment.get(index = it))
                 }
@@ -270,7 +292,32 @@ fun CommentSection(modifier: Modifier, listComment: MutableList<Comment>) {
         Spacer(modifier = Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             OutlinedTextField(
-                modifier = Modifier.weight(1f), value = comment, onValueChange = { comment = it },
+                modifier = Modifier
+                    .weight(1f)
+                    .onKeyEvent { event ->
+                        if (event.key == Key.Enter && event.type == KeyEventType.KeyUp) {
+                            if (comment.isNotBlank()) {
+                                onSendComment(comment)
+                                comment = ""
+                            }
+                            true
+                        } else {
+                            false
+                        }
+
+                    }, value = comment, onValueChange = { comment = it },
+
+                keyboardOptions = KeyboardOptions.Default.copy(
+                    imeAction = ImeAction.Send
+                ),
+                keyboardActions = KeyboardActions(
+                    onSend = {
+                        if (comment.isNotBlank()) {
+                            onSendComment(comment)
+                            comment = ""
+                        }
+                    }
+                ),
                 label = {},
                 placeholder = {
                     Text(
@@ -280,7 +327,12 @@ fun CommentSection(modifier: Modifier, listComment: MutableList<Comment>) {
                 },
                 shape = RoundedCornerShape(16.dp),
                 trailingIcon = {
-                    Icon(Icons.AutoMirrored.Filled.Send, "", tint = Color.White)
+                    IconButton(onClick = {
+                        onSendComment(comment)
+                        comment = ""
+                    }) {
+                        Icon(Icons.AutoMirrored.Filled.Send, "", tint = Color.White)
+                    }
                 },
                 singleLine = true
             )
@@ -295,13 +347,13 @@ fun CommentSection(modifier: Modifier, listComment: MutableList<Comment>) {
 }
 
 @Composable
-fun CommentCard(comment: Comment) {
+fun CommentCard(comment: LiveComment) {
     Row(
         modifier = Modifier.padding(all = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            painter = painterResource(comment.avatar),
+        AsyncImage(
+            model = comment.avatar,
             contentDescription = "avatar",
             modifier = Modifier
                 .size(20.dp)
@@ -328,7 +380,7 @@ fun CommentCard(comment: Comment) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BottomSheet(
-    listBid: List<BidDetail>,
+    bidHistory: List<BidDetail>,
     item: AuctionItem,
     timeRemaining: Int,
     onDismiss: () -> Unit,
@@ -343,7 +395,7 @@ fun BottomSheet(
         dragHandle = { BottomSheetDefaults.DragHandle() },
     ) {
         Column(modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp)) {
-            ItemDetail(listBid, item, timeRemaining,
+            ItemDetail(bidHistory, item, timeRemaining,
                 onTimeUp = {
                     onTimeUp.invoke()
                 },
@@ -356,13 +408,18 @@ fun BottomSheet(
 
 @Composable
 fun ItemDetail(
-    listBid: List<BidDetail>,
+    bidHistory: List<BidDetail>,
     item: AuctionItem,
     timeRemaining: Int,
     onTimeUp: () -> Unit,
     onBidPlaced: (Int) -> Unit
 ) {
     var timeLeft by rememberSaveable { mutableStateOf(timeRemaining) }
+    val chatListState = rememberLazyListState()
+
+    LaunchedEffect(bidHistory) {
+        chatListState.animateScrollToItem(chatListState.layoutInfo.totalItemsCount)
+    }
     LaunchedEffect(item) {
         timeLeft = timeRemaining
     }
@@ -415,9 +472,9 @@ fun ItemDetail(
             .height(80.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        LazyColumn(modifier = Modifier.weight(1f)) {
-            items(listBid.size) {
-                ItemBidding(bid = listBid.get(index = it))
+        LazyColumn(modifier = Modifier.weight(1f), state = chatListState) {
+            items(bidHistory.size) {
+                ItemBidding(bid = bidHistory.get(index = it))
             }
         }
         Card(
@@ -489,15 +546,16 @@ fun ItemBidding(bid: BidDetail) {
         modifier = Modifier.padding(all = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            painter = painterResource(bid.avatar),
+        AsyncImage(
+            model = bid.avatar,
             contentDescription = "avatar",
             modifier = Modifier
                 .size(16.dp)
+                .clip(CircleShape)
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = "${bid.userName} is bidding RM${bid.bidAmount}",
+            text = "${bid.userName} is bidding RM${bid.amount.toInt()}",
             style = MaterialTheme.typography.bodySmall.copy(color = Color.White)
         )
     }

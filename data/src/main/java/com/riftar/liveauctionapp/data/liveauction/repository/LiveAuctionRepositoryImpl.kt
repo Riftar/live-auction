@@ -1,12 +1,11 @@
 package com.riftar.liveauctionapp.data.liveauction.repository
 
-import android.util.Log
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import com.riftar.liveauctionapp.domain.liveauction.model.AuctionItem
-import com.riftar.liveauctionapp.domain.liveauction.model.Bid
+import com.riftar.liveauctionapp.domain.liveauction.model.BidDetail
 import com.riftar.liveauctionapp.domain.liveauction.repository.LiveAuctionRepository
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -23,19 +22,14 @@ class LiveAuctionRepositoryImpl @Inject constructor(
         val itemsRef = database.getReference("items")
         val listener = itemsRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val allItems2 = mutableListOf<AuctionItem>()
-                Log.d("Rifqi-test", "Children is: ${snapshot.children}")
+                val allItems = mutableListOf<AuctionItem>()
                 for (child in snapshot.children) {
-                    //todo create dedicated AuctionItemResponse class that accept null
                     val auctionItem = child.getValue(AuctionItem::class.java)
                     if (auctionItem != null) {
-                        allItems2.add(auctionItem)
+                        allItems.add(auctionItem)
                     }
                 }
-                Log.d("Rifqi-test", "Wrap is: $allItems2")
-                val items = snapshot.children.mapNotNull { it.getValue(AuctionItem::class.java) }
-
-                trySend(allItems2)
+                trySend(allItems)
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -61,7 +55,7 @@ class LiveAuctionRepositoryImpl @Inject constructor(
         awaitClose { timeRemainingRef.removeEventListener(listener) }
     }
 
-    override suspend fun placeBid(itemId: String, bid: Bid) {
+    override fun placeBid(itemId: String, bid: BidDetail) {
         val itemRef = database.getReference("items").child(itemId)
         val bidRef = database.getReference("bids")
 
@@ -78,8 +72,30 @@ class LiveAuctionRepositoryImpl @Inject constructor(
             mapOf(
                 "userId" to bid.userName,
                 "amount" to bid.amount,
+                "avatar" to bid.avatar,
                 "timestamp" to System.currentTimeMillis()
             )
         )
+    }
+
+    override fun getBidHistory(itemId: String): Flow<List<BidDetail>> = callbackFlow {
+        val bidsRef = database.getReference("bids").child(itemId)
+        val listener = bidsRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val allBid = mutableListOf<BidDetail>()
+                for (child in snapshot.children) {
+                    val bidItem = child.getValue(BidDetail::class.java)
+                    if (bidItem != null) {
+                        allBid.add(bidItem)
+                    }
+                }
+                trySend(allBid)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                close(error.toException())
+            }
+        })
+        awaitClose { bidsRef.removeEventListener(listener) }
     }
 }
