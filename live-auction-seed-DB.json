@@ -1,0 +1,242 @@
+{
+  "bids": {
+    "item1": {
+      "1728039120983": {
+        "amount": 80,
+        "avatar": "https://picsum.photos/id/309/120/120",
+        "timestamp": 1728039120983,
+        "userId": "Xiaomi"
+      },
+      "1728039140076": {
+        "amount": 85,
+        "avatar": "https://picsum.photos/id/304/120/120",
+        "timestamp": 1728039140076,
+        "userId": "Google"
+      },
+      "1728040248876": {
+        "amount": 90,
+        "avatar": "https://picsum.photos/id/309/120/120",
+        "timestamp": 1728040248876,
+        "userId": "Xiaomi"
+      },
+      "1728040255457": {
+        "amount": 95,
+        "avatar": "https://picsum.photos/id/304/120/120",
+        "timestamp": 1728040255457,
+        "userId": "Google"
+      },
+      "1728040263473": {
+        "amount": 100,
+        "avatar": "https://picsum.photos/id/309/120/120",
+        "timestamp": 1728040263473,
+        "userId": "Xiaomi"
+      },
+      "1728040271325": {
+        "amount": 105,
+        "avatar": "https://picsum.photos/id/304/120/120",
+        "timestamp": 1728040271325,
+        "userId": "Google"
+      },
+      "1728041231630": {
+        "amount": 110,
+        "avatar": "https://picsum.photos/id/304/120/120",
+        "timestamp": 1728041231631,
+        "userId": "Google"
+      },
+      "1728041238085": {
+        "amount": 115,
+        "avatar": "https://picsum.photos/id/309/120/120",
+        "timestamp": 1728041238085,
+        "userId": "Xiaomi"
+      },
+      "1728041244923": {
+        "amount": 120,
+        "avatar": "https://picsum.photos/id/309/120/120",
+        "timestamp": 1728041244924,
+        "userId": "Xiaomi"
+      },
+      "1728041251222": {
+        "amount": 125,
+        "avatar": "https://picsum.photos/id/304/120/120",
+        "timestamp": 1728041251223,
+        "userId": "Google"
+      },
+      "1728041383835": {
+        "amount": 130,
+        "avatar": "https://picsum.photos/id/304/120/120",
+        "timestamp": 1728041383835,
+        "userId": "Google"
+      },
+      "1728041393294": {
+        "amount": 135,
+        "avatar": "https://picsum.photos/id/309/120/120",
+        "timestamp": 1728041393294,
+        "userId": "Xiaomi"
+      },
+      "1728041400399": {
+        "amount": 140,
+        "avatar": "https://picsum.photos/id/304/120/120",
+        "timestamp": 1728041400399,
+        "userId": "Google"
+      }
+    },
+    "item2": {
+      "1728023867694": {
+        "amount": 105,
+        "timestamp": 1728023867694,
+        "userId": "Xiaomi"
+      },
+      "1728023868654": {
+        "amount": 110,
+        "timestamp": 1728023868655,
+        "userId": "Xiaomi"
+      },
+      "1728025105649": {
+        "amount": 115,
+        "timestamp": 1728025105649,
+        "userId": "Google"
+      },
+      "1728041426777": {
+        "amount": 120,
+        "avatar": "https://picsum.photos/id/304/120/120",
+        "timestamp": 1728041426777,
+        "userId": "Google"
+      },
+      "1728041434003": {
+        "amount": 125,
+        "avatar": "https://picsum.photos/id/309/120/120",
+        "timestamp": 1728041434003,
+        "userId": "Xiaomi"
+      }
+    },
+    "item3": {
+      "1728023944551": {
+        "amount": 135,
+        "timestamp": 1728023944551,
+        "userId": "Xiaomi"
+      }
+    }
+  },
+  "comments": {
+    "1728031416220": {
+      "author": "Xiaomi",
+      "avatar": "https://picsum.photos/id/309/120/120",
+      "comment": "wowwwww!!!",
+      "id": 1728031416219,
+      "timestamp": 1728031416220
+    },
+    "1728032363474": {
+      "author": "Xiaomi",
+      "avatar": "https://picsum.photos/id/309/120/120",
+      "comment": "where do you even find it.... 🤔",
+      "id": 1728032363474,
+      "timestamp": 1728032363474
+    },
+    "1728036015431": {
+      "author": "Xiaomi",
+      "avatar": "https://picsum.photos/id/309/120/120",
+      "comment": "I want to buy one!!",
+      "id": 1728036015431,
+      "timestamp": 1728036015431
+    },
+    "1728036115778": {
+      "author": "Xiaomi",
+      "avatar": "https://picsum.photos/id/309/120/120",
+      "comment": "Ping!",
+      "id": 1728036115778,
+      "timestamp": 1728036115779
+    },
+    "1728039151869": {
+      "author": "Google",
+      "avatar": "https://picsum.photos/id/304/120/120",
+      "comment": "wow lots of people here...",
+      "id": 1728039151869,
+      "timestamp": 1728039151870
+    },
+    "1728040236698": {
+      "author": "Xiaomi",
+      "avatar": "https://picsum.photos/id/309/120/120",
+      "comment": "hi there",
+      "id": 1728040236698,
+      "timestamp": 1728040236698
+    },
+    "1728040283364": {
+      "author": "Xiaomi",
+      "avatar": "https://picsum.photos/id/309/120/120",
+      "comment": "haiii",
+      "id": 1728040283363,
+      "timestamp": 1728040283364
+    },
+    "1728040312277": {
+      "author": "Google",
+      "avatar": "https://picsum.photos/id/304/120/120",
+      "comment": "uupdating...",
+      "id": 1728040312276,
+      "timestamp": 1728040312277
+    },
+    "1728040961031": {
+      "author": "Xiaomi",
+      "avatar": "https://picsum.photos/id/309/120/120",
+      "comment": "i want to buy it",
+      "id": 1728040961030,
+      "timestamp": 1728040961031
+    },
+    "1728041223657": {
+      "author": "Xiaomi",
+      "avatar": "https://picsum.photos/id/309/120/120",
+      "comment": "hi there",
+      "id": 1728041223656,
+      "timestamp": 1728041223657
+    },
+    "1728041375998": {
+      "author": "Google",
+      "avatar": "https://picsum.photos/id/304/120/120",
+      "comment": "hi",
+      "id": 1728041375997,
+      "timestamp": 1728041375998
+    },
+    "1728041442211": {
+      "author": "Xiaomi",
+      "avatar": "https://picsum.photos/id/309/120/120",
+      "comment": "give it to me!!!",
+      "id": 1728041442210,
+      "timestamp": 1728041442211
+    }
+  },
+  "items": {
+    "item1": {
+      "basePrice": 75,
+      "currentBidder": "Google",
+      "currentPrice": 140,
+      "description": "Experience precise control and comfort with our high-performance mouse. Customizable settings and ergonomic design make it ideal for work and play.",
+      "id": "item1",
+      "imageUrl": "https://live-auction-app-d5431.firebaseapp.com/mouse.webp",
+      "name": "Rex Gaming Mouse",
+      "startTimestamp": 1728026352337,
+      "timeRemaining": 10
+    },
+    "item2": {
+      "basePrice": 95,
+      "currentBidder": "Xiaomi",
+      "currentPrice": 125,
+      "description": "Upgrade your workspace with our ergonomic chair. Designed for comfort and support, this chair features adjustable settings and breathable fabric.",
+      "id": "item2",
+      "imageUrl": "https://live-auction-app-d5431.firebaseapp.com/chair.jpg",
+      "name": "Stramm Ergonomic Chair",
+      "startTimestamp": 1728026370375,
+      "timeRemaining": 10
+    },
+    "item3": {
+      "basePrice": 125,
+      "currentBidder": "Xiaomi",
+      "currentPrice": 135,
+      "description": "Capture stunning photos and videos with our compact and versatile mirrorless camera. Enjoy interchangeable lenses and advanced features for professional-grade results.",
+      "id": "item3",
+      "imageUrl": "https://live-auction-app-d5431.firebaseapp.com/camera.jpg",
+      "name": "Sony A7x II",
+      "startTimestamp": 1728026388759,
+      "timeRemaining": 10
+    }
+  },
+  "timeRemaining": 10
+}
