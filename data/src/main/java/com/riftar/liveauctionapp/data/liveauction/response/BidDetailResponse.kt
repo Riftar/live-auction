@@ -6,7 +6,7 @@ import java.util.Calendar
 
 
 data class BidDetailResponse(
-    val userName: String,
+    val userId: String,
     val amount: Double,
     val timestamp: Long = System.currentTimeMillis(),
     val avatar: String = "https://picsum.photos/id/${
@@ -21,7 +21,7 @@ data class BidDetailResponse(
     )
     companion object {
         fun BidDetailResponse?.toDomainModel() = BidDetail(
-            userName = this?.userName.orEmpty(),
+            userName = this?.userId.orEmpty(),
             amount = this?.amount ?: 0.0,
             timestamp = this?.timestamp ?: 0,
             avatar = this?.avatar.orEmpty()

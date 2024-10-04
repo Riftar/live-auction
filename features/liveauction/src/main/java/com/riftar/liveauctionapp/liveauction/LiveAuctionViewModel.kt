@@ -32,9 +32,11 @@ class LiveAuctionViewModel @Inject constructor(
             viewCount = 34567,
             streamTitle = "The Most EPIC SALE!!1!",
             streamDate = 1667776000000, // April 2022
-            thumbnailUrl = "https://picsum.photos/id/${
-                Random.nextInt(1, 1000)
-            }/1080/1920/?blur=1"
+            // background can be different for each devices because of randomization of the photo id
+            //thumbnailUrl = "https://picsum.photos/id/${
+            //                Random.nextInt(1, 1000)
+            //            }/1080/1920/?blur=1"
+            thumbnailUrl = "https://picsum.photos/id/67/1080/1920/?blur=1"
         )
     )
 

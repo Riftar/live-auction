@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -23,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -47,12 +49,17 @@ fun CommentSection(
     onSendComment: (String) -> Unit
 ) {
     var comment by rememberSaveable { mutableStateOf("") }
+    val chatListState = rememberLazyListState()
 
+    LaunchedEffect(listComment) {
+        chatListState.animateScrollToItem(chatListState.layoutInfo.totalItemsCount)
+    }
     Column(modifier = modifier) {
         Box(modifier = Modifier.height(300.dp)) {
             LazyColumn(
                 modifier.fillMaxSize(),
                 verticalArrangement = Arrangement.Bottom,
+                state = chatListState
             ) {
                 items(listComment.size) {
                     CommentCard(comment = listComment.get(index = it))
@@ -98,8 +105,10 @@ fun CommentSection(
                 shape = RoundedCornerShape(16.dp),
                 trailingIcon = {
                     IconButton(onClick = {
-                        onSendComment(comment)
-                        comment = ""
+                        if (comment.isNotBlank()) {
+                            onSendComment(comment)
+                            comment = ""
+                        }
                     }) {
                         Icon(Icons.AutoMirrored.Filled.Send, "", tint = MaterialTheme.colorScheme.primary)
                     }
