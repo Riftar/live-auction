@@ -22,7 +22,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.outlined.Storefront
 import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Badge
+import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.BottomSheetDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -30,6 +34,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -37,11 +42,15 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -57,12 +66,12 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.ConstraintSet
 import androidx.core.graphics.toColorInt
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
 import com.riftar.liveauctionapp.domain.liveauction.model.AuctionItem
 import com.riftar.liveauctionapp.liveauction.ui.theme.LiveAuctionAppTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlin.random.Random
+import kotlinx.coroutines.delay
+
 @AndroidEntryPoint
 class LiveAuctionActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,21 +93,28 @@ class LiveAuctionActivity : ComponentActivity() {
 fun HomeScreen(modifier: Modifier = Modifier) {
     val viewModel: LiveAuctionViewModel = hiltViewModel()
     val currentItem by viewModel.auctionItem.collectAsState()
+    val stream by viewModel.stream.collectAsState()
+    val listComment by viewModel.listComment.collectAsState()
+    val listBid by viewModel.listBid.collectAsState()
     var showSheet by rememberSaveable { mutableStateOf(false) }
-    val stream = StreamModel(
-        avatarUrl = "https://picsum.photos/id/${
-            Random.nextInt(1, 100)
-        }/200/200",
-        streamID = "stream19",
-        userName = "NaturePhotographer",
-        viewCount = 34567,
-        streamTitle = "Nature Photography Tips",
-        streamDate = 1667776000000, // April 2022
-        thumbnailUrl = "https://picsum.photos/id/${
-            Random.nextInt(1, 100)
-        }/1080/1920/?blur=1"
-    )
+    val shouldShowDialog = rememberSaveable { mutableStateOf(false) }
+    val deviceManufacturer = android.os.Build.MANUFACTURER
+    var startingCountDownTimer by rememberSaveable { mutableIntStateOf(5) }
     val constraint = itemStreamConstraints()
+
+    LaunchedEffect(Unit) {
+        viewModel.startAuction()
+    }
+    LaunchedEffect(key1 = startingCountDownTimer) {
+        while (startingCountDownTimer > 0) {
+            delay(1000L)
+            startingCountDownTimer--
+        }
+        if (startingCountDownTimer == 0) {
+            showSheet = true
+        }
+    }
+
     ConstraintLayout(constraint, modifier = modifier) {
         AsyncImage(
             modifier = Modifier
@@ -168,108 +184,110 @@ fun HomeScreen(modifier: Modifier = Modifier) {
                     style = MaterialTheme.typography.bodySmall.copy(color = Color.White),
                 )
                 Text(
-                    text = currentItem.toString(),
+                    text = stream.streamTitle,
                     style = MaterialTheme.typography.titleMedium.copy(color = Color.White),
                 )
             }
         }
+
+        StarterText(modifier = Modifier.layoutId("starterText"), startingCountDownTimer)
+
         CommentSection(
             modifier = Modifier
                 .padding(vertical = 8.dp, horizontal = 16.dp)
-                .layoutId("commentSection")
+                .layoutId("commentSection"),
+            listComment
         )
 
         if (showSheet) {
             currentItem?.let {
-                BottomSheet(viewModel, it) {
-                    showSheet = false
-                }
+                BottomSheet(listBid, it,
+                    onTimeUp = {
+                        shouldShowDialog.value = true
+                    },
+                    onBidPlaced = {
+                        currentItem?.let { item ->
+                            viewModel.placeBid(deviceManufacturer, item)
+                        }
+                    },
+                    onDismiss = {
+                        showSheet = false
+                    })
             }
         }
 
-        // TODO DELETE
-        Button(
-            onClick = { showSheet = true }, modifier = Modifier
-                .height(8.dp)
-                .fillMaxWidth()
-                .layoutId("buttonShow")
+        EndAuctionDialog(shouldShowDialog,
+            onDismiss = {
+                shouldShowDialog.value = false
+                viewModel.goToNextItem()
+                showSheet = false
+                startingCountDownTimer = 5
+            }
+        )
+    }
+}
+
+@Composable
+fun StarterText(modifier: Modifier, startingCountDownTimer: Int) {
+    if (startingCountDownTimer > 0) {
+        Column(
+            modifier = modifier
+                .background(
+                    color = Color.DarkGray.copy(alpha = 0.5f),
+                    shape = RoundedCornerShape(16.dp)
+                )
+                .padding(16.dp),
+            horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
         ) {
-            Text("Show Sheet")
+            Text(
+                text = "Starting In",
+                style = MaterialTheme.typography.bodyLarge.copy(color = Color.White)
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = startingCountDownTimer.toString(),
+                style = MaterialTheme.typography.headlineLarge.copy(color = Color.White)
+            )
         }
     }
 }
 
 @Composable
-fun CommentSection(modifier: Modifier) {
+fun CommentSection(modifier: Modifier, listComment: MutableList<Comment>) {
     var comment by rememberSaveable { mutableStateOf("") }
-    val listComments = listOf(
-        Comment(
-            id = 1,
-            author = "Sheryl",
-            comment = "The base ScrollScope where the scroll session was created.",
-            avatar = R.drawable.ic_avatar_1,
-            date = 3021
-        ),
-        Comment(
-            id = 2,
-            author = "Adele",
-            comment = "logic describing fling behavior.",
-            avatar = R.drawable.ic_avatar_3,
-            date = 3021
-        ),
-        Comment(
-            id = 3,
-            author = "Robert",
-            comment = "An implementation of LazyLayoutScrollScope that works with LazyRow and LazyColumn.",
-            avatar = R.drawable.ic_avatar_2,
-            date = 3021
-        ),
-        Comment(
-            id = 4,
-            author = "Adele",
-            comment = "the vertical alignment applied to the items",
-            avatar = R.drawable.ic_avatar_3,
-            date = 3021
-        ),
-        Comment(
-            id = 5,
-            author = "Sheryl",
-            comment = "the state object to be used to control or observe the list's state",
-            avatar = R.drawable.ic_avatar_1,
-            date = 3021
-        ),
-        Comment(
-            id = 6,
-            author = "Robert",
-            comment = "a factory of the content types for the item. The item compositions of the same type could be reused more efficiently. Note that null is a valid type and items of such type will be considered compatible.",
-            avatar = R.drawable.ic_avatar_2,
-            date = 3021
-        ),
-    )
-    val doubleList = mutableListOf<Comment>().apply {
-        repeat(10) {
-            addAll(listComments)
-        }
-    }
+
     Column(modifier = modifier) {
         Box(modifier = Modifier.height(300.dp)) {
             LazyColumn() {
-                items(doubleList.size) {
-                    CommentCard(comment = doubleList.get(index = it))
+                items(listComment.size) {
+                    CommentCard(comment = listComment.get(index = it))
                 }
             }
         }
         Spacer(modifier = Modifier.height(8.dp))
-        OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(), value = comment, onValueChange = { comment = it },
-            label = {},
-            placeholder = { Text(text = "Say something", style = TextStyle(color = Color.White)) },
-            shape = RoundedCornerShape(16.dp),
-            trailingIcon = {
-                Icon(Icons.AutoMirrored.Filled.Send, "", tint = Color.White)
-            },
-            singleLine = true
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            OutlinedTextField(
+                modifier = Modifier.weight(1f), value = comment, onValueChange = { comment = it },
+                label = {},
+                placeholder = {
+                    Text(
+                        text = "Say something",
+                        style = TextStyle(color = Color.White)
+                    )
+                },
+                shape = RoundedCornerShape(16.dp),
+                trailingIcon = {
+                    Icon(Icons.AutoMirrored.Filled.Send, "", tint = Color.White)
+                },
+                singleLine = true
+            )
+            IconButton(modifier = Modifier.weight(0.2f), onClick = { /*TODO*/ }) {
+                BadgedBox(badge = { Badge { Text("1") } }) {
+                    Icon(Icons.Outlined.Storefront, "icon store", tint = Color.White)
+                }
+            }
+            Spacer(modifier = Modifier.width(4.dp))
+        }
     }
 }
 
@@ -306,7 +324,13 @@ fun CommentCard(comment: Comment) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BottomSheet(viewModel: LiveAuctionViewModel, item: AuctionItem, onDismiss: () -> Unit) {
+fun BottomSheet(
+    listBid: List<BidDetail>,
+    item: AuctionItem,
+    onDismiss: () -> Unit,
+    onTimeUp: () -> Unit,
+    onBidPlaced: (Int) -> Unit
+) {
     val modalBottomSheetState = rememberModalBottomSheetState()
 
     ModalBottomSheet(
@@ -314,25 +338,42 @@ fun BottomSheet(viewModel: LiveAuctionViewModel, item: AuctionItem, onDismiss: (
         sheetState = modalBottomSheetState,
         dragHandle = { BottomSheetDefaults.DragHandle() },
     ) {
-        BidSection(viewModel, item)
+        Column(modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp)) {
+            ItemDetail(listBid, item,
+                onTimeUp = {
+                    onTimeUp.invoke()
+                },
+                onBidPlaced = { bidAmount ->
+                    onBidPlaced.invoke(bidAmount)
+                })
+        }
     }
 }
 
 @Composable
-fun BidSection(viewModel: LiveAuctionViewModel, item: AuctionItem) {
-    Column(modifier = Modifier.padding(vertical = 8.dp, horizontal = 16.dp)) {
-        ItemDetail(viewModel, item)
+fun ItemDetail(
+    listBid: List<BidDetail>,
+    item: AuctionItem,
+    onTimeUp: () -> Unit,
+    onBidPlaced: (Int) -> Unit
+) {
+    var timeLeft by rememberSaveable { mutableIntStateOf(10) }
+    LaunchedEffect(key1 = timeLeft) {
+        while (timeLeft > 0) {
+            delay(1000L)
+            timeLeft--
+        }
+        if (timeLeft == 0) {
+            onTimeUp.invoke()
+        }
     }
-}
 
-@Composable
-fun ItemDetail(viewModel: LiveAuctionViewModel, item: AuctionItem) {
     Row(
         modifier = Modifier.padding(all = 8.dp),
         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
     ) {
         AsyncImage(
-           model = item.imageUrl,
+            model = item.imageUrl,
             contentDescription = "avatar",
             modifier = Modifier
                 .size(84.dp)
@@ -366,29 +407,6 @@ fun ItemDetail(viewModel: LiveAuctionViewModel, item: AuctionItem) {
             .height(80.dp),
         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
     ) {
-        val listBid = listOf(
-            BidDetail(
-                id = 1,
-                avatar = R.drawable.ic_avatar_1,
-                userName = "Adele",
-                bidAmount = 25,
-                date = 3021
-            ),
-            BidDetail(
-                id = 2,
-                avatar = R.drawable.ic_avatar_3,
-                userName = "Raymond",
-                bidAmount = 35,
-                date = 3021
-            ),
-            BidDetail(
-                id = 1,
-                avatar = R.drawable.ic_avatar_2,
-                userName = "Michael",
-                bidAmount = 45,
-                date = 3021
-            )
-        )
         LazyColumn(modifier = Modifier.weight(1f)) {
             items(listBid.size) {
                 ItemBidding(bid = listBid.get(index = it))
@@ -408,7 +426,7 @@ fun ItemDetail(viewModel: LiveAuctionViewModel, item: AuctionItem) {
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "RM ${item.currentPrice}",
+                    text = "RM${item.currentPrice}",
                     style = MaterialTheme.typography.titleMedium.copy(
                         color = Color.White,
                         fontWeight = FontWeight.Medium
@@ -431,7 +449,7 @@ fun ItemDetail(viewModel: LiveAuctionViewModel, item: AuctionItem) {
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "00:10",
+                    text = timeLeft.toString(),
                     style = MaterialTheme.typography.titleMedium.copy(
                         color = Color.White,
                         fontWeight = FontWeight.Medium
@@ -441,12 +459,15 @@ fun ItemDetail(viewModel: LiveAuctionViewModel, item: AuctionItem) {
         }
     }
     Button(
-        onClick = { viewModel.placeBid("user1", item) },
+        onClick = {
+            timeLeft = 10
+            onBidPlaced.invoke(item.currentPrice + 5)
+        },
         modifier = Modifier.fillMaxWidth(),
         colors = ButtonDefaults.buttonColors(containerColor = Color("#C2FF61".toColorInt()))
     ) {
         Text(
-            text = "Bid RM ${item.currentPrice + 5}",
+            text = "Bid RM${item.currentPrice + 5}",
             style = MaterialTheme.typography.bodyLarge.copy(
                 color = Color.DarkGray,
                 fontWeight = FontWeight.Bold
@@ -469,7 +490,7 @@ fun ItemBidding(bid: BidDetail) {
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = "${bid.userName} is bidding RM ${bid.bidAmount}",
+            text = "${bid.userName} is bidding RM${bid.bidAmount}",
             style = MaterialTheme.typography.bodySmall.copy(color = Color.White)
         )
     }
@@ -479,8 +500,7 @@ private fun itemStreamConstraints() = ConstraintSet {
     val viewCount = createRefFor("viewCount")
     val userInfo = createRefFor("userInfo")
     val commentSection = createRefFor("commentSection")
-    //TODO DELETE
-    val buttonShow = createRefFor("buttonShow")
+    val starterText = createRefFor("starterText")
 
     constrain(viewCount) {
         top.linkTo(parent.top)
@@ -494,12 +514,38 @@ private fun itemStreamConstraints() = ConstraintSet {
         bottom.linkTo(parent.bottom)
         start.linkTo(parent.start)
     }
-    constrain(buttonShow) {
-        bottom.linkTo(parent.bottom)
+    constrain(starterText) {
+        top.linkTo(userInfo.bottom)
         start.linkTo(parent.start)
+        end.linkTo(parent.end)
     }
 }
 
+@Composable
+fun EndAuctionDialog(shouldShowDialog: MutableState<Boolean>, onDismiss: () -> Unit) {
+    if (shouldShowDialog.value) {
+        AlertDialog(
+            onDismissRequest = {
+                onDismiss.invoke()
+            },
+
+            title = { Text(text = "Times Up!") },
+            text = { Text(text = "The item has been sold!") },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onDismiss.invoke()
+                    }
+                ) {
+                    Text(
+                        text = "Next Item",
+                        color = Color.White
+                    )
+                }
+            }
+        )
+    }
+}
 
 @Preview(showBackground = true)
 @Composable

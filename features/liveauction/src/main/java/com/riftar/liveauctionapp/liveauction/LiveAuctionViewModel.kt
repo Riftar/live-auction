@@ -8,30 +8,134 @@ import com.riftar.liveauctionapp.domain.liveauction.repository.LiveAuctionReposi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import kotlin.random.Random
 
 @HiltViewModel
-class LiveAuctionViewModel @Inject constructor(private val repository: LiveAuctionRepository) : ViewModel() {
+class LiveAuctionViewModel @Inject constructor(private val repository: LiveAuctionRepository) :
+    ViewModel() {
+    val stream: StateFlow<StreamModel> = MutableStateFlow(
+        StreamModel(
+            avatarUrl = "https://picsum.photos/id/${
+                Random.nextInt(1, 100)
+            }/200/200",
+            streamID = "stream19",
+            userName = "NaturePhotographer",
+            viewCount = 34567,
+            streamTitle = "Nature Photography Tips",
+            streamDate = 1667776000000, // April 2022
+            thumbnailUrl = "https://picsum.photos/id/${
+                Random.nextInt(1, 100)
+            }/1080/1920/?blur=1"
+        )
+    )
+    private val listComments = listOf(
+        Comment(
+            id = 1,
+            author = "Sheryl",
+            comment = "The base ScrollScope where the scroll session was created.",
+            avatar = R.drawable.ic_avatar_1,
+            date = 3021
+        ),
+        Comment(
+            id = 2,
+            author = "Adele",
+            comment = "logic describing fling behavior.",
+            avatar = R.drawable.ic_avatar_3,
+            date = 3021
+        ),
+        Comment(
+            id = 3,
+            author = "Robert",
+            comment = "An implementation of LazyLayoutScrollScope that works with LazyRow and LazyColumn.",
+            avatar = R.drawable.ic_avatar_2,
+            date = 3021
+        ),
+        Comment(
+            id = 4,
+            author = "Adele",
+            comment = "the vertical alignment applied to the items",
+            avatar = R.drawable.ic_avatar_3,
+            date = 3021
+        ),
+        Comment(
+            id = 5,
+            author = "Sheryl",
+            comment = "the state object to be used to control or observe the list's state",
+            avatar = R.drawable.ic_avatar_1,
+            date = 3021
+        ),
+        Comment(
+            id = 6,
+            author = "Robert",
+            comment = "a factory of the content types for the item. The item compositions of the same type could be reused more efficiently. Note that null is a valid type and items of such type will be considered compatible.",
+            avatar = R.drawable.ic_avatar_2,
+            date = 3021
+        ),
+    )
+    private val doubleList = mutableListOf<Comment>().apply {
+        repeat(10) {
+            addAll(listComments)
+        }
+    }
+    val listComment = MutableStateFlow(doubleList)
+    val listBid = MutableStateFlow(
+        listOf(
+            BidDetail(
+                id = 1,
+                avatar = R.drawable.ic_avatar_1,
+                userName = "Adele",
+                bidAmount = 25,
+                date = 3021
+            ),
+            BidDetail(
+                id = 2,
+                avatar = R.drawable.ic_avatar_3,
+                userName = "Raymond",
+                bidAmount = 35,
+                date = 3021
+            ),
+            BidDetail(
+                id = 1,
+                avatar = R.drawable.ic_avatar_2,
+                userName = "Michael",
+                bidAmount = 45,
+                date = 3021
+            )
+        )
+    )
     private val _auctionItem = MutableStateFlow<AuctionItem?>(null)
     val auctionItem: StateFlow<AuctionItem?> = _auctionItem
+    private val _itemIndex = MutableStateFlow(0)
+    val itemIndex: StateFlow<Int> = _itemIndex
 
-    init {
-        startAuction("item1")
-    }
-
-    fun startAuction(itemId: String) {
+    fun startAuction() {
         viewModelScope.launch {
-            repository.getAuctionItemFlow().collect {
-                _auctionItem.value = it.first()
+            combine(_itemIndex, repository.getAuctionItemFlow()) { index, auctionItems ->
+                auctionItems[index]
+            }.collect { auctionItem ->
+                _auctionItem.value = auctionItem
             }
         }
     }
 
-    fun placeBid(userId: String, currentItem: AuctionItem) {
+    fun placeBid(userName: String, currentItem: AuctionItem) {
         viewModelScope.launch {
-            val bid = Bid(userId, (currentItem.currentPrice?.toDouble() ?: 0.0) + 5)
-            repository.placeBid(currentItem.id.orEmpty(), bid)
+            val bid = Bid(userName, currentItem.currentPrice.toDouble() + 5)
+            repository.placeBid(currentItem.id, bid)
+        }
+    }
+
+    fun goToNextItem() {
+        viewModelScope.launch {
+            // Max index is 2 for now
+            val currentIndex = if (_itemIndex.value > 2) {
+                0
+            } else _itemIndex.value
+
+            _itemIndex.emit(currentIndex + 1)
         }
     }
 }
@@ -53,40 +157,6 @@ data class Comment(
     val comment: String,
     val avatar: Int,
     val date: Long
-)
-
-data class ItemDetail(
-    val id: Int,
-    val name: String,
-    val description: String,
-    val photo: Int
-)
-
-val camera = ItemDetail(
-    id = 7413,
-    name = "Sony A7x II",
-    description = "Capture stunning photos and videos with our compact and versatile mirrorless camera. Enjoy interchangeable lenses and advanced features for professional-grade results.",
-    photo = R.drawable.ic_camera
-)
-
-val chair = ItemDetail(
-    id = 4335,
-    name = "Stramm Ergonomic Chair",
-    description = "Upgrade your workspace with our ergonomic chair. Designed for comfort and support, this chair features adjustable settings and breathable fabric.",
-    photo = R.drawable.ic_chair
-)
-
-val mouse = ItemDetail(
-    id = 4335,
-    name = "Rex Gaming Mouse",
-    description = "Experience precise control and comfort with our high-performance mouse. Customizable settings and ergonomic design make it ideal for work and play.",
-    photo = R.drawable.ic_mouse
-)
-
-val listItem = listOf(
-    camera,
-    chair,
-    mouse
 )
 
 data class BidDetail(

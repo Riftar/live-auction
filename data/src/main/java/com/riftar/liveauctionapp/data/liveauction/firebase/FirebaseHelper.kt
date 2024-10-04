@@ -31,7 +31,7 @@ object FirebaseHelper {
 
     suspend fun placeBid(itemId: String, bid: Bid) {
         database.child("items").child(itemId).child("currentPrice").setValue(bid.amount)
-        database.child("items").child(itemId).child("currentBidder").setValue(bid.userId)
+        database.child("items").child(itemId).child("currentBidder").setValue(bid.userName)
         database.child("items").child(itemId).child("timeRemaining").setValue(10)
         database.child("bids").child(itemId).push().setValue(bid)
     }

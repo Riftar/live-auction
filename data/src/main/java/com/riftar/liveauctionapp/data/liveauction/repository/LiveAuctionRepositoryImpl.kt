@@ -52,12 +52,12 @@ class LiveAuctionRepositoryImpl @Inject constructor(
         Log.d("Rifqi-test", "placeBid: Item ${itemRef.child("name")}")
 
         itemRef.child("currentPrice").setValue(bid.amount)
-        itemRef.child("currentBidder").setValue(bid.userId)
+        itemRef.child("currentBidder").setValue(bid.userName)
 
         val bidId = System.currentTimeMillis().toString()
-        bidRef.child(bidId).setValue(
+        bidRef.child(itemId).child(bidId).setValue(
             mapOf(
-                "userId" to bid.userId,
+                "userId" to bid.userName,
                 "amount" to bid.amount,
                 "timestamp" to System.currentTimeMillis()
             )
