@@ -10,11 +10,4 @@ data class BidDetail(
     val avatar: String = "https://picsum.photos/id/${
         Calendar.getInstance().get(Calendar.DAY_OF_YEAR)+ Build.VERSION.SDK_INT
     }/120/120"
-) {
-    constructor() : this(
-        "",
-        0.0,
-        0,
-        ""
-    )
-}
+)

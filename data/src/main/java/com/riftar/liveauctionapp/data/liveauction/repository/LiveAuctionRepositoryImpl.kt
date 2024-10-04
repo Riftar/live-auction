@@ -4,6 +4,10 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.riftar.liveauctionapp.data.liveauction.response.AuctionItemResponse
+import com.riftar.liveauctionapp.data.liveauction.response.AuctionItemResponse.Companion.toDomainModel
+import com.riftar.liveauctionapp.data.liveauction.response.BidDetailResponse
+import com.riftar.liveauctionapp.data.liveauction.response.BidDetailResponse.Companion.toDomainModel
 import com.riftar.liveauctionapp.domain.liveauction.model.AuctionItem
 import com.riftar.liveauctionapp.domain.liveauction.model.BidDetail
 import com.riftar.liveauctionapp.domain.liveauction.repository.LiveAuctionRepository
@@ -24,9 +28,9 @@ class LiveAuctionRepositoryImpl @Inject constructor(
             override fun onDataChange(snapshot: DataSnapshot) {
                 val allItems = mutableListOf<AuctionItem>()
                 for (child in snapshot.children) {
-                    val auctionItem = child.getValue(AuctionItem::class.java)
+                    val auctionItem = child.getValue(AuctionItemResponse::class.java)
                     if (auctionItem != null) {
-                        allItems.add(auctionItem)
+                        allItems.add(auctionItem.toDomainModel())
                     }
                 }
                 trySend(allItems)
@@ -84,9 +88,9 @@ class LiveAuctionRepositoryImpl @Inject constructor(
             override fun onDataChange(snapshot: DataSnapshot) {
                 val allBid = mutableListOf<BidDetail>()
                 for (child in snapshot.children) {
-                    val bidItem = child.getValue(BidDetail::class.java)
+                    val bidItem = child.getValue(BidDetailResponse::class.java)
                     if (bidItem != null) {
-                        allBid.add(bidItem)
+                        allBid.add(bidItem.toDomainModel())
                     }
                 }
                 trySend(allBid)

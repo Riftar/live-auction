@@ -4,6 +4,8 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.riftar.liveauctionapp.data.liveauction.response.LiveCommentResponse
+import com.riftar.liveauctionapp.data.liveauction.response.LiveCommentResponse.Companion.toDomainModel
 import com.riftar.liveauctionapp.domain.liveauction.model.LiveComment
 import com.riftar.liveauctionapp.domain.liveauction.repository.CommentRepository
 import kotlinx.coroutines.channels.awaitClose
@@ -37,9 +39,9 @@ class CommentRepositoryImpl @Inject constructor(
             override fun onDataChange(snapshot: DataSnapshot) {
                 val listComment = mutableListOf<LiveComment>()
                 for (child in snapshot.children) {
-                    val comment = child.getValue(LiveComment::class.java)
+                    val comment = child.getValue(LiveCommentResponse::class.java)
                     if (comment != null) {
-                        listComment.add(comment)
+                        listComment.add(comment.toDomainModel())
                     }
                 }
                 trySend(listComment)

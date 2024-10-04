@@ -8,15 +8,4 @@ data class AuctionItem(
     var currentPrice: Int,
     var currentBidder: String = "",
     var timeRemaining: Int = 10
-) {
-    constructor(): this(
-        "",
-        "",
-        "",
-        "",
-        0,
-        0,
-        "",
-        10
-    )
-}
+)

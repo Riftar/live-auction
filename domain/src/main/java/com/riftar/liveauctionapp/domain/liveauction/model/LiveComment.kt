@@ -11,6 +11,4 @@ data class LiveComment(
         Calendar.getInstance().get(Calendar.DAY_OF_YEAR) + Build.VERSION.SDK_INT
     }/120/120",
     val timestamp: Long = System.currentTimeMillis()
-) {
-    constructor() : this(0, "", "", "", 0)
-}
+)
