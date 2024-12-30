@@ -45,6 +45,7 @@ class LiveAuctionRepositoryImpl @Inject constructor(
 
 
     // in an ideal system, the timer should be retrieve from backend
+    // test comment
     override fun getTimeRemaining(): Flow<Int> = callbackFlow {
         val timeRemainingRef = database.getReference("timeRemaining")
         val listener = timeRemainingRef.addValueEventListener(object : ValueEventListener {
