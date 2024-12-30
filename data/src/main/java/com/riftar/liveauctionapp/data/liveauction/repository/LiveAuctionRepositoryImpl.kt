@@ -55,6 +55,7 @@ class LiveAuctionRepositoryImpl @Inject constructor(
             }
 
             override fun onCancelled(error: DatabaseError) {
+                // TODO test
                 close(error.toException())
             }
         })
