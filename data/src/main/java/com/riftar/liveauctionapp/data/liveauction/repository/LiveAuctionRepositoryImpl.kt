@@ -50,6 +50,7 @@ class LiveAuctionRepositoryImpl @Inject constructor(
         val timeRemainingRef = database.getReference("timeRemaining")
         val listener = timeRemainingRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
+                // TODO: handle error
                 trySend(snapshot.getValue(Int::class.java) ?: 0)
             }
 
