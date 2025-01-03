@@ -1,0 +1,29 @@
+apply plugin: 'io.gitlab.arturbosch.detekt'
+
+detekt {
+    toolVersion = "1.23.7"
+    parallel = false
+    config.setFrom(files("${rootProject.projectDir}/config/detekt/detekt.yml"))
+    buildUponDefaultConfig = false
+    allRules = false
+    disableDefaultRuleSets = false
+    debug = false
+    ignoreFailures = false
+    // ignoredBuildTypes = listOf("release")
+    // ignoredFlavors = listOf("production")
+    // ignoredVariants = listOf("productionRelease")
+    basePath = projectDir.absolutePath
+
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+        txt.required.set(true)
+        sarif.required.set(true)
+    }
+}
+tasks.whenTaskAdded {
+    if (name == "compileDebugKotlin") {
+        dependsOn(tasks.named("detekt"))
+        mustRunAfter(tasks.named("detekt"))
+    }
+}

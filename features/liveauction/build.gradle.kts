@@ -5,6 +5,8 @@ plugins {
     id("com.google.dagger.hilt.android")
 }
 
+apply(from = "$rootDir/detekt-config.gradle")
+
 android {
     namespace = "com.riftar.liveauctionapp.liveauction"
     compileSdk = 34
