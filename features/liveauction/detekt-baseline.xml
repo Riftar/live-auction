@@ -1,0 +1,52 @@
+<?xml version="1.0" ?>
+<SmellBaseline>
+  <ManuallySuppressedIssues></ManuallySuppressedIssues>
+  <CurrentIssues>
+    <ID>FunctionNaming:AuctionItemBottomSheet.kt$@Composable fun ItemDetail( bidHistory: List&lt;BidDetail&gt;, item: AuctionItem, timeRemaining: Int, onTimeUp: () -&gt; Unit, onBidPlaced: (Int) -&gt; Unit )</ID>
+    <ID>FunctionNaming:AuctionItemBottomSheet.kt$@OptIn(ExperimentalMaterial3Api::class) @Composable fun AuctionItemBottomSheet( bidHistory: List&lt;BidDetail&gt;, item: AuctionItem, timeRemaining: Int, onDismiss: () -&gt; Unit, onTimeUp: () -&gt; Unit, onBidPlaced: (Int) -&gt; Unit )</ID>
+    <ID>FunctionNaming:CommentCard.kt$@Composable fun CommentCard(comment: LiveComment)</ID>
+    <ID>FunctionNaming:CommentSection.kt$@Composable fun CommentSection( modifier: Modifier, listComment: List&lt;LiveComment&gt;, onSendComment: (String) -&gt; Unit )</ID>
+    <ID>FunctionNaming:EndAuctionDialog.kt$@Composable fun EndAuctionDialog(shouldShowDialog: MutableState&lt;Boolean&gt;, onDismiss: () -&gt; Unit)</ID>
+    <ID>FunctionNaming:HomeScreen.kt$@Composable fun HomeScreen(modifier: Modifier = Modifier)</ID>
+    <ID>FunctionNaming:ItemBidding.kt$@Composable fun ItemBidding(bid: BidDetail)</ID>
+    <ID>FunctionNaming:LiveAuctionActivity.kt$@Preview(showBackground = true) @Composable fun GreetingPreview()</ID>
+    <ID>FunctionNaming:StarterText.kt$@Composable fun StarterText(modifier: Modifier, startingCountDownTimer: Int)</ID>
+    <ID>FunctionNaming:Theme.kt$@Composable fun LiveAuctionAppTheme( darkTheme: Boolean = isSystemInDarkTheme(), // Dynamic color is available on Android 12+ dynamicColor: Boolean = true, content: @Composable () -&gt; Unit )</ID>
+    <ID>LongMethod:AuctionItemBottomSheet.kt$@Composable fun ItemDetail( bidHistory: List&lt;BidDetail&gt;, item: AuctionItem, timeRemaining: Int, onTimeUp: () -&gt; Unit, onBidPlaced: (Int) -&gt; Unit )</ID>
+    <ID>LongMethod:CommentSection.kt$@Composable fun CommentSection( modifier: Modifier, listComment: List&lt;LiveComment&gt;, onSendComment: (String) -&gt; Unit )</ID>
+    <ID>LongMethod:HomeScreen.kt$@Composable fun HomeScreen(modifier: Modifier = Modifier)</ID>
+    <ID>LongParameterList:AuctionItemBottomSheet.kt$( bidHistory: List&lt;BidDetail&gt;, item: AuctionItem, timeRemaining: Int, onDismiss: () -&gt; Unit, onTimeUp: () -&gt; Unit, onBidPlaced: (Int) -&gt; Unit )</ID>
+    <ID>MagicNumber:AuctionItemBottomSheet.kt$1000L</ID>
+    <ID>MagicNumber:AuctionItemBottomSheet.kt$5</ID>
+    <ID>MagicNumber:Color.kt$0xFF111111</ID>
+    <ID>MagicNumber:Color.kt$0xFF9BCC4E</ID>
+    <ID>MagicNumber:Color.kt$0xFFC2FF61</ID>
+    <ID>MagicNumber:Color.kt$0xFFD4FF8D</ID>
+    <ID>MagicNumber:Color.kt$0xFFFFFFFF</ID>
+    <ID>MagicNumber:CommentSection.kt$0.2f</ID>
+    <ID>MagicNumber:HomeScreen.kt$10</ID>
+    <ID>MagicNumber:HomeScreen.kt$1000L</ID>
+    <ID>MagicNumber:LiveAuctionViewModel.kt$LiveAuctionViewModel$10</ID>
+    <ID>MagicNumber:LiveAuctionViewModel.kt$LiveAuctionViewModel$100</ID>
+    <ID>MagicNumber:Theme.kt$0xFF2C2C2C</ID>
+    <ID>MagicNumber:Theme.kt$0xFFB1384E</ID>
+    <ID>MagicNumber:Theme.kt$0xFFCF6679</ID>
+    <ID>NewLineAtEndOfFile:AuctionItemBottomSheet.kt$com.riftar.liveauctionapp.liveauction.components.AuctionItemBottomSheet.kt</ID>
+    <ID>NewLineAtEndOfFile:Color.kt$com.riftar.liveauctionapp.liveauction.ui.theme.Color.kt</ID>
+    <ID>NewLineAtEndOfFile:CommentCard.kt$com.riftar.liveauctionapp.liveauction.components.CommentCard.kt</ID>
+    <ID>NewLineAtEndOfFile:EndAuctionDialog.kt$com.riftar.liveauctionapp.liveauction.components.EndAuctionDialog.kt</ID>
+    <ID>NewLineAtEndOfFile:ExampleUnitTest.kt$com.riftar.liveauctionapp.liveauction.ExampleUnitTest.kt</ID>
+    <ID>NewLineAtEndOfFile:ItemBidding.kt$com.riftar.liveauctionapp.liveauction.components.ItemBidding.kt</ID>
+    <ID>NewLineAtEndOfFile:LiveAuctionActivity.kt$com.riftar.liveauctionapp.liveauction.LiveAuctionActivity.kt</ID>
+    <ID>NewLineAtEndOfFile:StarterText.kt$com.riftar.liveauctionapp.liveauction.components.StarterText.kt</ID>
+    <ID>NewLineAtEndOfFile:Theme.kt$com.riftar.liveauctionapp.liveauction.ui.theme.Theme.kt</ID>
+    <ID>NewLineAtEndOfFile:Type.kt$com.riftar.liveauctionapp.liveauction.ui.theme.Type.kt</ID>
+    <ID>UnusedParameter:LiveAuctionViewModel.kt$LiveAuctionViewModel$currentItem: AuctionItem</ID>
+    <ID>UnusedParameter:LiveAuctionViewModel.kt$LiveAuctionViewModel$itemId: String</ID>
+    <ID>UnusedParameter:LiveAuctionViewModel.kt$LiveAuctionViewModel$userName: String</ID>
+    <ID>UnusedParameter:Theme.kt$darkTheme: Boolean = isSystemInDarkTheme()</ID>
+    <ID>UnusedParameter:Theme.kt$dynamicColor: Boolean = true</ID>
+    <ID>UnusedPrivateProperty:LiveAuctionViewModel.kt$LiveAuctionViewModel$private val repository: LiveAuctionRepository</ID>
+    <ID>WildcardImport:ExampleUnitTest.kt$import org.junit.Assert.*</ID>
+  </CurrentIssues>
+</SmellBaseline>

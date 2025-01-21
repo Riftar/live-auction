@@ -8,10 +8,3 @@ plugins {
     alias(libs.plugins.google.gms) apply false
     id("io.gitlab.arturbosch.detekt").version("1.23.7") apply false
 }
-
-tasks.withType<io.gitlab.arturbosch.detekt.Detekt>().configureEach {
-    this.jvmTarget = "1.8"
-}
-tasks.withType<io.gitlab.arturbosch.detekt.DetektCreateBaselineTask>().configureEach {
-    this.jvmTarget = "1.8"
-}

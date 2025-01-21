@@ -27,3 +27,7 @@ tasks.whenTaskAdded {
         mustRunAfter(tasks.named("detekt"))
     }
 }
+
+tasks.matching { (it.name == "detekt" || it.name == "detektBaseline") }.configureEach {
+    jvmTarget = JavaVersion.VERSION_17
+}
